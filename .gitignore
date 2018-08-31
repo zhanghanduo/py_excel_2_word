@@ -104,7 +104,5 @@ venv.bak/
 .mypy_cache/
 
 # other docs
-*.xlsx
-*.xls
 *.docx
 *.doc
