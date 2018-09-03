@@ -1,9 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+import os
 import xlrd
 from docx import Document
 from docx.shared import Inches
+from docx.shared import Pt
 from docx.oxml.ns import qn
 
 from docx.enum.table import WD_TABLE_ALIGNMENT
@@ -11,7 +12,8 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.style import WD_STYLE_TYPE
 
 # Open the file
-wb = xlrd.open_workbook('C:\\workspace\\test.xlsx')
+path_read = os.path.join(os.getcwd(), 'test.xlsx')
+wb = xlrd.open_workbook(path_read)
 
 # Get the list of the sheets name
 sheet_list = wb.sheet_names()
@@ -25,14 +27,19 @@ for i in range(s.nrows - 1):
     document.styles['Normal'].font.name = u'宋体'
     document.styles['Normal']._element.rPr.rFonts.set(qn('w:eastAsia'), u'宋体')
 
+    style_head = document.styles.add_style('r_head', WD_STYLE_TYPE.PARAGRAPH)
+    style_head.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    style_head.font.name = u'宋体'
+    style_head.font.size = Pt(9)
+    style_head._element.rPr.rFonts.set(qn('w:eastAsia'), u'宋体')
+    foot_head = document.add_paragraph('JL(JLBZ-F-08)-02JD(01)',style = 'r_head')
+
     style = document.styles.add_style('rtl', WD_STYLE_TYPE.PARAGRAPH)
     style.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
     style.font.name = u'宋体'
     style._element.rPr.rFonts.set(qn('w:eastAsia'), u'宋体')
 
     head = document.add_paragraph('压力表检定记录',style = 'rtl')
-    # head.bold = True
-    # head.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     tab1 = document.add_table(rows=6, cols=4)
     tab1.style = 'Table Grid'
@@ -114,7 +121,26 @@ for i in range(s.nrows - 1):
 
     tab3 = document.add_table(rows=1, cols=1)
     tab3.style = 'Table Grid'
-    cell30 = tab2.rows[0].cells
+    cell30 = tab3.rows[0].cells
     cell30[0].text = '检定所使用的计量标准'
 
-    document.save('C:\\workspace\\result_' + str(i + 1) +'.docx')
+    tab4 = document.add_table(rows=2, cols=3)
+    tab4.style = 'Table Grid'
+    cell40 = tab4.rows[0].cells
+    cell40[0].text = '名称'
+    cell40[1].text = '准确度等级'
+    cell40[2].text = '证书编号'
+    cell41 = tab4.rows[1].cells
+    cell41[0].text = '0.05级活塞式压力计标准装置'
+    cell41[1].text = '0.05'
+    cell41[2].text = '[1987]辽量标法证字第1038号'
+
+    tab5 = document.add_table(rows=3, cols=1)
+    tab5.style = 'Table Grid'
+    cell50 = tab5.rows[0].cells
+    cell50[0].text = '(1)开机检查是否符合要求　　　　　　是　　　'
+
+
+
+    path_write = os.path.join(os.getcwd(), 'result', str(i + 1) + '.docx')
+    document.save(path_write)
