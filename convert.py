@@ -18,17 +18,6 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.style import WD_STYLE_TYPE
 
-def insert_paragraph_before(item, text, style=None):
-    """
-    Return a newly created paragraph, inserted directly before this
-    item (Table, etc.).
-    """
-    p = CT_P.add_p_before(item._element)
-    p2 = Paragraph(p, item._parent)
-    p2.text = text
-    p2.style = style
-    return p2
-
 def convert(config):
 
     # Open the excel file
@@ -53,6 +42,15 @@ def convert(config):
     #             print('col {}:\n'.format(cellidx), file=open("debug.txt", "a"))
     #             for paragraph in cell.paragraphs:
     #                 print('{} | '.format(paragraph.text), file=open("debug.txt", "a", encoding="utf-8"))
+
+    # Create sub_working_dir
+    now = datetime.datetime.now()
+    sub_working_dir = '{}/{}/{}'.format(
+        os.getcwd(), config['output_dir'],
+        time.strftime("%d%H%M%S", time.localtime()))
+    if not os.path.exists(sub_working_dir):
+        os.makedirs(sub_working_dir)
+    logging.info("sub working dir: %s" % sub_working_dir)
 
     for i in range(s.nrows - 1):
         document = doc_template
@@ -112,16 +110,26 @@ def convert(config):
         table.cell(6, 1).paragraphs[0].paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
         # 环境温度
-        tmp = table.cell(6, 12).text
         table.cell(6, 8).text = str(s.cell(i+1, 6).value) + '   ℃'
         table.cell(6, 8).paragraphs[0].paragraph_format.alignment = WD_ALIGN_PARAGRAPH.LEFT
 
         # 相对湿度
         tmp = table.cell(6, 17).text
-        table.cell(6, 16).text = str(s.cell(i+1, 7).value) + tmp
+        table.cell(6, 16).text = str(s.cell(i+1, 7).value) + '   %'
         table.cell(6, 16).paragraphs[0].paragraph_format.alignment = WD_ALIGN_PARAGRAPH.LEFT
 
-        path_write = os.path.join(sub_working_dir, 'result', str(i + 1) + '.docx')
+        if config['date_params'] == 0:
+            parag = document.paragraphs[3]
+            text = parag.text
+            text_day = text.find('日')
+            text_month = text.find('月')
+            text_year = text.find('年')
+            parag._p.clear()
+            parag.add_run(text[:text_year-8] + ' ' + str(now.year) + '   ' + text[text_year] + '   ' + 
+                        str(now.month) + '   ' + text[text_month] + '   ' + str(now.day) + '  ' + text[text_day])
+            parag.runs[0].font.size = Pt(12)
+
+        path_write = os.path.join(sub_working_dir, config['output_dir'] + str(i + 1) + '.docx')
         document.save(path_write)
 
 def main():
@@ -137,14 +145,6 @@ def main():
         sys.exit()
     config = importlib.import_module(params_path[:-3]).PARAMS
     
-    # Create sub_working_dir
-    sub_working_dir = '{}/try{}/{}'.format(
-        os.getcwd(), config['try'],
-        time.strftime("%Y%m%d%H%M%S", time.localtime()))
-    if not os.path.exists(sub_working_dir):
-        os.makedirs(sub_working_dir)
-    logging.info("sub working dir: %s" % sub_working_dir)
-
     convert(config)
 
 if __name__ == "__main__":
