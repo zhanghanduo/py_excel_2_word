@@ -1,4 +1,3 @@
-xlrd
+openpyxl==2.4.9
 datetime
-python-docx
 importlib
