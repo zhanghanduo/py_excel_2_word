@@ -97,7 +97,7 @@ def convert(config):
     print("row and column number of data source: {0} | {1}".format(s.max_row, s.max_column))
 
     # 2. 读取模板excel的数据，读入内存
-    path_template = os.path.join(os.getcwd(), config['read_params']['template_name'])
+    path_template = os.path.join(os.getcwd(), config['read_params']['template_name'] + '1.xlsm')
     doc_template = load_workbook(path_template, keep_vba=True)
 
     # 2.1 获取模板excel所有工作簿(sheet)
@@ -121,8 +121,6 @@ def convert(config):
     for i in range(s.max_row - 2):
         row_index = i + 3
 
-        workbook1 = load_workbook(path_template, keep_vba=True)                         # 建立模板sheet副本用于修改添加信息
-
         # 4.1 读取源数据中的测量范围，提取数字(上限，下限)
         up_lim = s.cell(column=7, row=row_index).value
         down_lim = s.cell(column=6, row=row_index).value
@@ -130,22 +128,24 @@ def convert(config):
 
         # 4.2 根据上限判断使用哪个模板，建立工作簿副本w_sheet
         if up_lim == 0.16 or up_lim == 0.25 or up_lim == 0.4 or up_lim == 0.6 or up_lim == 1:
-            sheet_index = 0                                                             # mode 1
-            print
+            sheet_index = 1                                                             # mode 1
         elif up_lim == 1.6 or up_lim == 2.5 or up_lim == 4 or up_lim == 6 or up_lim == 10:
-            sheet_index = 1                                                             # mode 2
+            sheet_index = 2                                                             # mode 2
         elif up_lim == 16 or up_lim == 25 or up_lim == 40 or up_lim == 60 or up_lim == 100:
-            sheet_index = 2                                                             # mode 3
+            sheet_index = 3                                                             # mode 3
         elif up_lim == 160 or up_lim == 250:
-            sheet_index = 3                                                             # mode 4
+            sheet_index = 4                                                             # mode 4
         else:
             print("Other type!")
 
-        # 4.3 副本去掉其他无用的工作簿sheet
-        for sh in range(len(sheet_list_t)):
-            if sh == sheet_index:
-                continue
-            workbook1.remove(workbook1.get_sheet_by_name(sheet_list_t[sh]) )   
+        path_template_i = os.path.join(os.getcwd(), config['read_params']['template_name'] + str(sheet_index) + '.xlsm')
+        workbook1 = load_workbook(path_template, keep_vba=True)                         # 建立模板sheet副本用于修改添加信息
+
+        # # 4.3 副本去掉其他无用的工作簿sheet
+        # for sh in range(len(sheet_list_t)):
+        #     if sh == sheet_index:
+        #         continue
+        #     workbook1.remove(workbook1.get_sheet_by_name(sheet_list_t[sh]) )   
 
         # 5. 确定worksheet为待修改的工作簿sheet
         sheet_list_0 = workbook1.sheetnames

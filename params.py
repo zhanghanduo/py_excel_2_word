@@ -2,7 +2,7 @@ PARAMS = \
     {
         "read_params": {
             "source_name": "source.xlsx",
-            "template_name": "template.xlsm",     #"template.xlsm",
+            "template_name": "template",     # "template1.xlsm","template2.xlsm","template3.xlsm"
             "picture_name": "curve.png",          # 因为无法自动生成形状，需要读取png
         },
         "output_params":{
